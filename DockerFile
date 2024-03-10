@@ -1,20 +1,12 @@
-# Use Node.js version 14 as base image
-FROM node:14
-
-# Create a directory for the app
-WORKDIR /usr/src/app
-
-# Copy package.json and package-lock.json to the container
-COPY package*.json ./
-
-# Install app dependencies
+FROM node:latest
+ENV APP_HOME /app
+RUN mkdir -pv $APP_HOME
+WORKDIR $APP_HOME
+ADD . $APP_HOME
+ENV NODE_ENV production
+ENV NPM_CONFIG_LOGLEVEL warn
+# ADD CUSTOM REGISTRY HERE IF REQUIRED
+# ENV CUSTOM_REGISTRY https://registry.npmjs.org/ 
+# RUN npm config set strict-ssl false
+# RUN npm config set registry $CUSTOM_REGISTRY
 RUN npm install
-
-# Bundle app source
-COPY . .
-
-# Expose the port the app runs on
-EXPOSE 3000
-
-# Command to run the app
-CMD ["node", "server.js"]
