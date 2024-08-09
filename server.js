@@ -15,14 +15,17 @@ router.get("/api", async (ctx) => {
 			return;
 		}
 
-		console.log("Query parameters:", ctx.request.query);
-
+		//console.log("Query parameters:", ctx.request.query);
 		const browser = await puppeteer.launch({
 			headless: true, // or false based on your preference
 			args: ["--no-sandbox", "--disable-setuid-sandbox"],
 		});
 
 		const page = await browser.newPage();
+
+		await page.setUserAgent(
+			"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+		);
 
 		await page.goto(url, {
 			timeout: 10000,
