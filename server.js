@@ -7,39 +7,44 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 puppeteer.use(StealthPlugin());
 
 router.get("/api", async (ctx) => {
-  const { url, requestUrl } = ctx.request.query;
-  console.log("Query parameters:", ctx.request.query);
+	try {
+		const { url } = ctx.request.query;
+		if (!url) {
+			ctx.status = 400;
+			ctx.body = { error: "Missing url parameter" };
+			return;
+		}
 
-  const browser = await puppeteer.launch({
-    headless: "new",
-    // ...more config options
-  });
+		console.log("Query parameters:", ctx.request.query);
 
-  const page = await browser.newPage();
+		const browser = await puppeteer.launch({
+			headless: true, // or false based on your preference
+		});
 
-  //await page.setRequestInterception(true);
+		const page = await browser.newPage();
 
-  await page.goto(url, {
-    timeout: 10000,
-  });
+		await page.goto(url, {
+			timeout: 10000,
+			waitUntil: "networkidle2", // Wait until the network is idle
+		});
 
-  const finalResponse = await page.waitForResponse(
-    (response) =>
-      response.url() === requestUrl &&
-      (response.request().method() === "PATCH" ||
-        response.request().method() === "POST"),
-    11
-  );
-  let responseJson = await finalResponse.json();
+		// Get the HTML content of the page
+		const html = await page.content();
 
-  console.log(responseJson);
+		await browser.close();
 
-  await browser.close();
-
-  ctx.body = responseJson;
+		// Respond with the HTML content
+		ctx.body = html;
+	} catch (error) {
+		console.error("Error occurred:", error);
+		ctx.status = 500;
+		ctx.body = { error: "Internal Server Error", details: error.message };
+	}
 });
 
 app.use(router.routes());
 app.use(router.allowedMethods());
 
-app.listen(3000);
+app.listen(3000, () => {
+	console.log("Server is running on port 3000");
+});
