@@ -19,6 +19,7 @@ router.get("/api", async (ctx) => {
 
 		const browser = await puppeteer.launch({
 			headless: true, // or false based on your preference
+			args: ["--no-sandbox", "--disable-setuid-sandbox"],
 		});
 
 		const page = await browser.newPage();
